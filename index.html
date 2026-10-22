@@ -1184,7 +1184,8 @@
         return activeCategory === 'all' || item.category === activeCategory;
       });
 
-      document.getElementById('mapItemCount').textContent = `pois.lengthBlock{pois.length === 1 ? '' : 's'}`;
+      document.getElementById('mapItemCount').textContent = `${pois.length} Block${pois.length === 1 ? '' : 's'} `
+;
 
       if (pois.length === 0) {
         sidebarContainer.innerHTML = `<p class="text-xs text-slate-500 italic p-3 text-center">No blocks match this category filter.</p>`;
