@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- FIXME: Change title -->
   <title>UTAR Navigation System | Kampar & Sungai Long</title>
   
   <!-- Tailwind CSS CDN -->
@@ -11,6 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
 
   <script>
     tailwind.config = {
@@ -87,6 +91,13 @@
     .map-block-active text {
       fill: #FFFFFF !important;
     }
+
+    /* Source - https://stackoverflow.com/a/73083646 */
+    /* Posted by hassan tarif                        */
+    /* Retrieved 2026-10-25, License - CC BY-SA 4.0  */
+    .leaflet-control { z-index: 0 !important}
+    .leaflet-pane { z-index: 0 !important}
+    .leaflet-top, .leaflet-bottom {z-index: 0 !important}
   </style>
 </head>
 <body class="bg-utar-grayBg text-slate-800 font-sans antialiased flex flex-col min-h-screen">
@@ -118,14 +129,14 @@
             <i class="fa-solid fa-map-location-dot"></i>
             <span>Campus Map</span>
           </a>
-          <a href="#landmarks" class="hover:text-utar-gold transition-colors duration-200 flex items-center space-x-1">
-            <i class="fa-solid fa-building-columns"></i>
-            <span>Block Directory</span>
-          </a>
-          <a href="#route-helper" class="hover:text-utar-gold transition-colors duration-200 flex items-center space-x-1">
-            <i class="fa-solid fa-route text-utar-gold"></i>
-            <span>Pathfinder</span>
-          </a>
+          <!-- <a href="#landmarks" class="hover:text-utar-gold transition-colors duration-200 flex items-center space-x-1"> -->
+          <!--   <i class="fa-solid fa-building-columns"></i> -->
+          <!--   <span>Block Directory</span> -->
+          <!-- </a> -->
+          <!-- <a href="#route-helper" class="hover:text-utar-gold transition-colors duration-200 flex items-center space-x-1"> -->
+          <!--   <i class="fa-solid fa-route"></i> -->
+          <!--   <span>Pathfinder</span> -->
+          <!-- </a> -->
           <a href="#facilities-index" class="hover:text-utar-gold transition-colors duration-200 flex items-center space-x-1">
             <i class="fa-solid fa-circle-info"></i>
             <span>Facilities</span>
@@ -135,17 +146,6 @@
             <span>Shuttle Schedule</span>
           </a>
         </nav>
-
-        <!-- Campus Selector Badge & Controls -->
-        <div class="hidden lg:flex items-center space-x-3 bg-slate-800/80 p-1.5 rounded-xl border border-slate-700">
-          <span class="text-xs font-semibold px-2 text-slate-300">Campus:</span>
-          <button id="navKamparBtn" onclick="setCampus('kampar')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 bg-utar-red text-white shadow-md">
-            Kampar (Blocks A–P)
-          </button>
-          <button id="navSgLongBtn" onclick="setCampus('sglong')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 text-slate-300 hover:text-white">
-            Sungai Long (KA/KB)
-          </button>
-        </div>
 
         <!-- Mobile Menu Toggle Button -->
         <div class="md:hidden flex items-center">
@@ -158,13 +158,6 @@
 
     <!-- Mobile Navigation Dropdown -->
     <div id="mobileMenu" class="hidden md:hidden bg-slate-900 border-t border-slate-800 px-4 pt-3 pb-6 space-y-3">
-      <div class="flex items-center justify-between p-2 bg-slate-800 rounded-lg mb-3">
-        <span class="text-xs font-semibold text-slate-300">Switch Campus:</span>
-        <div class="flex space-x-2">
-          <button onclick="setCampus('kampar')" class="px-3 py-1 rounded text-xs font-bold bg-utar-red text-white">Kampar</button>
-          <button onclick="setCampus('sglong')" class="px-3 py-1 rounded text-xs font-bold bg-slate-700 text-slate-200">Sungai Long</button>
-        </div>
-      </div>
       <a href="#interactive-map" onclick="toggleMobileMenu()" class="block py-2 text-sm text-slate-200 hover:text-utar-gold"><i class="fa-solid fa-map-location-dot w-6"></i> Campus Map</a>
       <a href="#landmarks" onclick="toggleMobileMenu()" class="block py-2 text-sm text-slate-200 hover:text-utar-gold"><i class="fa-solid fa-building-columns w-6"></i> Block Directory</a>
       <a href="#route-helper" onclick="toggleMobileMenu()" class="block py-2 text-sm text-slate-200 hover:text-utar-gold"><i class="fa-solid fa-route w-6"></i> Walking Pathfinder</a>
@@ -179,12 +172,6 @@
     <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-96 h-96 bg-utar-red/10 rounded-full blur-3xl pointer-events-none"></div>
 
     <div class="max-w-5xl mx-auto text-center relative z-10">
-      
-      <div class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 mb-5 text-xs sm:text-sm font-medium text-utar-gold">
-        <i class="fa-solid fa-compass"></i>
-        <span>Official Interactive Block Finder & Route Calculator</span>
-      </div>
-
       <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
         Navigate <span id="heroCampusTitle" class="text-transparent bg-clip-text bg-gradient-to-r from-utar-gold via-red-400 to-white">UTAR Kampar Campus</span>
       </h1>
@@ -210,66 +197,11 @@
           </button>
         </div>
       </div>
-
-      <!-- Quick Action Chips -->
-      <div class="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto text-xs sm:text-sm">
-        <span class="text-slate-400 font-semibold mr-1">Quick Search Blocks:</span>
-        <div id="quickChipsContainer" class="flex flex-wrap gap-2 justify-center">
-          <!-- Dynamic Chips injected via JS -->
-        </div>
-      </div>
-
     </div>
   </section>
 
   <!-- ================= INTERACTIVE MAP SECTION ================= -->
   <section id="interactive-map" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-    
-    <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-slate-200 gap-4">
-      <div>
-        <div class="flex items-center space-x-2 text-xs font-bold text-utar-red uppercase tracking-widest mb-1">
-          <i class="fa-solid fa-location-dot"></i>
-          <span>Visual & Interactive Map</span>
-        </div>
-        <h2 class="text-2xl sm:text-3xl font-extrabold text-utar-navy">Interactive Campus Map Layout</h2>
-        <p class="text-slate-600 text-sm mt-1">Click on any block node on the visual map or switch to Google Maps mode.</p>
-      </div>
-
-      <div class="flex flex-wrap gap-2 items-center">
-        <!-- Map View Toggle: Visual SVG Map vs Google Maps -->
-        <div class="inline-flex p-1 bg-slate-200/80 rounded-xl shadow-inner">
-          <button 
-            id="mapModeSvgBtn" 
-            onclick="setMapMode('svg')" 
-            class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-white text-utar-navy shadow-sm">
-            <i class="fa-solid fa-map mr-1"></i> Visual Layout
-          </button>
-          <button 
-            id="mapModeGmapBtn" 
-            onclick="setMapMode('gmap')" 
-            class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 text-slate-600 hover:text-slate-900">
-            <i class="fa-solid fa-earth-americas mr-1"></i> Google Satellite
-          </button>
-        </div>
-
-        <!-- Campus Toggle Switch -->
-        <div class="inline-flex p-1 bg-slate-200/80 rounded-xl shadow-inner">
-          <button 
-            id="mapTabKampar" 
-            onclick="setCampus('kampar')" 
-            class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-utar-navy text-white shadow-sm">
-            Kampar
-          </button>
-          <button 
-            id="mapTabSgLong" 
-            onclick="setCampus('sglong')" 
-            class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 text-slate-600 hover:text-slate-900">
-            Sungai Long
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Category Filter Tabs -->
     <div class="flex items-center space-x-2 overflow-x-auto pb-4 mb-6 text-xs sm:text-sm no-scrollbar">
       <button onclick="filterCategory('all')" class="cat-btn active px-4 py-2 rounded-xl font-semibold bg-utar-navy text-white whitespace-nowrap shadow">
@@ -293,30 +225,12 @@
     <div class="bg-white rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden flex flex-col lg:flex-row">
       
       <!-- Left Map Box -->
-      <div class="lg:w-2/3 h-[450px] sm:h-[520px] relative bg-slate-900 flex items-center justify-center overflow-hidden">
-        
-        <!-- Google Maps View Mode -->
-        <iframe 
-          id="campusMapIframe" 
-          class="hidden w-full h-full"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.6295328827725!2d101.1378393!3d4.3385757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31cae3f16d5ba4db%3A0x8673a5538e1b439c!2sUniversiti%20Tunku%20Abdul%20Rahman%20(UTAR)%20Kampar%20Campus!5e0!3m2!1sen!2smy!4v1710000000000" 
-          style="border:0;" 
-          allowfullscreen="" 
-          loading="lazy" 
-          title="UTAR Google Map View">
-        </iframe>
-
-        <!-- Visual Interactive SVG Map View -->
-        <div id="svgMapContainer" class="w-full h-full relative p-4 flex items-center justify-center">
-          <svg id="visualCampusSvg" viewBox="0 0 900 550" class="w-full h-full max-h-full transition-all duration-300">
-            <!-- Dynamic SVG content generated by JavaScript -->
-          </svg>
-        </div>
-
-        <!-- Live Overlay Badge -->
-        <div class="absolute top-4 left-4 glass-effect px-3 py-1.5 rounded-lg shadow-md border border-slate-200 flex items-center space-x-2 text-xs font-bold text-slate-800">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-animation"></span>
-          <span id="mapOverlayLabel">Kampar Visual Map Layout</span>
+      <div class="lg:w-2/3 h-[520px] sm:h-[520px] relative bg-slate-900 flex items-center justify-center overflow-hidden">
+        <div class="w-full h-full relative p-4 flex items-center justify-center">
+            <div id="leafletMap" style="position: absolute; width: 100%; height: 100%;"></div>
+            <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+            <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
         </div>
       </div>
 
@@ -347,123 +261,121 @@
     </div>
   </section>
 
-  <!-- ================= BLOCK DIRECTORY & LANDMARKS GRID ================= -->
-  <section id="landmarks" class="py-12 bg-slate-100 border-t border-b border-slate-200 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-        <div>
-          <span class="text-xs font-bold text-utar-red uppercase tracking-widest">Complete Directory</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-utar-navy mt-1">Campus Block Directory</h2>
-          <p class="text-slate-600 text-sm mt-1">Click on any block card to reveal full details, faculties, facilities, and navigation.</p>
-        </div>
-
-        <div class="relative w-full sm:w-72">
-          <i class="fa-solid fa-filter absolute left-3 top-3 text-slate-400 text-xs"></i>
-          <input 
-            type="text" 
-            id="poiGridSearch"
-            onkeyup="filterPoiCards()"
-            placeholder="Filter blocks (e.g. Block N, FEGT)..." 
-            class="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-utar-navy shadow-sm"
-          />
-        </div>
-      </div>
-
-      <!-- POI Cards Grid -->
-      <div id="poiGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Rendered via JavaScript -->
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ================= CAMPUS PATHFINDER / ROUTE PLANNER ================= -->
-  <section id="route-helper" class="py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
-    <div class="bg-gradient-to-r from-utar-navy to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden border border-slate-800">
-      
-      <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-utar-gold/10 rounded-full blur-2xl pointer-events-none"></div>
-
-      <div class="max-w-3xl">
-        <div class="inline-flex items-center space-x-2 bg-utar-red text-white text-xs font-bold px-3 py-1 rounded-full mb-4">
-          <i class="fa-solid fa-person-walking"></i>
-          <span>On-Campus Pathfinder</span>
-        </div>
-        <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">Inter-Block Walking Pathfinder</h2>
-        <p class="text-slate-300 text-sm sm:text-base mb-8">
-          Select your starting block and destination block to compute walking time, distance, and visual route path.
-        </p>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <!-- Starting Block Select -->
-          <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15">
-            <label class="block text-xs font-bold text-utar-gold uppercase tracking-wider mb-2">
-              <i class="fa-solid fa-circle-dot text-emerald-400 mr-1.5"></i> Start Block
-            </label>
-            <select id="routeStart" class="w-full bg-slate-800 text-white text-sm rounded-xl p-3 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-utar-gold">
-              <!-- Dynamically Populated Options -->
-            </select>
-          </div>
-
-          <!-- Destination Block Select -->
-          <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15">
-            <label class="block text-xs font-bold text-utar-gold uppercase tracking-wider mb-2">
-              <i class="fa-solid fa-location-dot text-red-400 mr-1.5"></i> Destination Block
-            </label>
-            <select id="routeEnd" class="w-full bg-slate-800 text-white text-sm rounded-xl p-3 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-utar-gold">
-              <!-- Dynamically Populated Options -->
-            </select>
-          </div>
-        </div>
-
-        <div class="flex items-center space-x-3 mb-6">
-          <button 
-            onclick="calculateRoute()" 
-            class="bg-utar-gold hover:bg-yellow-500 text-utar-navy font-extrabold px-6 py-3 rounded-xl text-sm transition-all shadow-lg flex items-center space-x-2">
-            <i class="fa-solid fa-calculator"></i>
-            <span>Calculate Route</span>
-          </button>
-          <button 
-            onclick="swapRouteLocations()" 
-            class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-3 rounded-xl text-sm transition-all" title="Swap Locations">
-            <i class="fa-solid fa-arrows-rotate"></i>
-          </button>
-        </div>
-
-        <!-- Route Output Box -->
-        <div id="routeOutput" class="hidden bg-slate-800/90 rounded-2xl p-5 border border-slate-700/80 transition-all">
-          <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
-            <div class="flex items-center space-x-3">
-              <span class="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-lg"><i class="fa-solid fa-clock"></i></span>
-              <div>
-                <p class="text-xs text-slate-400">Est. Walking Time</p>
-                <p id="routeTime" class="text-xl font-extrabold text-white">4 Mins</p>
-              </div>
-            </div>
-            <div class="flex items-center space-x-3">
-              <span class="p-2 bg-blue-500/20 text-blue-400 rounded-lg text-lg"><i class="fa-solid fa-ruler"></i></span>
-              <div>
-                <p class="text-xs text-slate-400">Approx. Distance</p>
-                <p id="routeDistance" class="text-xl font-extrabold text-white">280 meters</p>
-              </div>
-            </div>
-          </div>
-
-          <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Walking Directions:</h4>
-          <ol id="routeSteps" class="space-y-2 text-xs sm:text-sm text-slate-300 list-decimal list-inside pl-1">
-            <!-- Dynamic steps -->
-          </ol>
-        </div>
-
-      </div>
-    </div>
-  </section>
+  <!-- <!-- ================= BLOCK DIRECTORY & LANDMARKS GRID ================= -->
+  <!-- <section id="landmarks" class="py-12 bg-slate-100 border-t border-b border-slate-200 px-4 sm:px-6 lg:px-8"> -->
+  <!--   <div class="max-w-7xl mx-auto"> -->
+  <!---->
+  <!--     <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4"> -->
+  <!--       <div> -->
+  <!--         <h2 class="text-2xl sm:text-3xl font-extrabold text-utar-navy mt-1">Campus Block Directory</h2> -->
+  <!--         <p class="text-slate-600 text-sm mt-1">Click on any block card to reveal full details, faculties, facilities, and navigation.</p> -->
+  <!--       </div> -->
+  <!---->
+  <!--       <div class="relative w-full sm:w-72"> -->
+  <!--         <i class="fa-solid fa-filter absolute left-3 top-3 text-slate-400 text-xs"></i> -->
+  <!--         <input  -->
+  <!--           type="text"  -->
+  <!--           id="poiGridSearch" -->
+  <!--           onkeyup="filterPoiCards()" -->
+  <!--           placeholder="Filter blocks (e.g. Block N, FEGT)..."  -->
+  <!--           class="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-utar-navy shadow-sm" -->
+  <!--         /> -->
+  <!--       </div> -->
+  <!--     </div> -->
+  <!---->
+  <!--     <!-- POI Cards Grid -->
+  <!--     <div id="poiGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"> -->
+  <!--       <!-- Rendered via JavaScript -->
+  <!--     </div> -->
+  <!---->
+  <!--   </div> -->
+  <!-- </section> -->
+  <!---->
+  <!-- <!-- ================= CAMPUS PATHFINDER / ROUTE PLANNER ================= -->
+  <!-- <section id="route-helper" class="py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full"> -->
+  <!--   <div class="bg-gradient-to-r from-utar-navy to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden border border-slate-800"> -->
+  <!---->
+  <!--     <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-utar-gold/10 rounded-full blur-2xl pointer-events-none"></div> -->
+  <!---->
+  <!--     <div class="max-w-3xl"> -->
+  <!--       <div class="inline-flex items-center space-x-2 bg-utar-red text-white text-xs font-bold px-3 py-1 rounded-full mb-4"> -->
+  <!--         <i class="fa-solid fa-person-walking"></i> -->
+  <!--         <span>On-Campus Pathfinder</span> -->
+  <!--       </div> -->
+  <!--       <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">Inter-Block Walking Pathfinder</h2> -->
+  <!--       <p class="text-slate-300 text-sm sm:text-base mb-8"> -->
+  <!--         Select your starting block and destination block to compute walking time, distance, and visual route path. -->
+  <!--       </p> -->
+  <!---->
+  <!--       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"> -->
+  <!--         <!-- Starting Block Select -->
+  <!--         <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15"> -->
+  <!--           <label class="block text-xs font-bold text-utar-gold uppercase tracking-wider mb-2"> -->
+  <!--             <i class="fa-solid fa-circle-dot text-emerald-400 mr-1.5"></i> Start Block -->
+  <!--           </label> -->
+  <!--           <select id="routeStart" class="w-full bg-slate-800 text-white text-sm rounded-xl p-3 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-utar-gold"> -->
+  <!--             <!-- Dynamically Populated Options -->
+  <!--           </select> -->
+  <!--         </div> -->
+  <!---->
+  <!--         <!-- Destination Block Select -->
+  <!--         <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15"> -->
+  <!--           <label class="block text-xs font-bold text-utar-gold uppercase tracking-wider mb-2"> -->
+  <!--             <i class="fa-solid fa-location-dot text-red-400 mr-1.5"></i> Destination Block -->
+  <!--           </label> -->
+  <!--           <select id="routeEnd" class="w-full bg-slate-800 text-white text-sm rounded-xl p-3 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-utar-gold"> -->
+  <!--             <!-- Dynamically Populated Options -->
+  <!--           </select> -->
+  <!--         </div> -->
+  <!--       </div> -->
+  <!---->
+  <!--       <div class="flex items-center space-x-3 mb-6"> -->
+  <!--         <button  -->
+  <!--           onclick="calculateRoute()"  -->
+  <!--           class="bg-utar-gold hover:bg-yellow-500 text-utar-navy font-extrabold px-6 py-3 rounded-xl text-sm transition-all shadow-lg flex items-center space-x-2"> -->
+  <!--           <i class="fa-solid fa-calculator"></i> -->
+  <!--           <span>Calculate Route</span> -->
+  <!--         </button> -->
+  <!--         <button  -->
+  <!--           onclick="swapRouteLocations()"  -->
+  <!--           class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-3 rounded-xl text-sm transition-all" title="Swap Locations"> -->
+  <!--           <i class="fa-solid fa-arrows-rotate"></i> -->
+  <!--         </button> -->
+  <!--       </div> -->
+  <!---->
+  <!--       <!-- Route Output Box -->
+  <!--       <div id="routeOutput" class="hidden bg-slate-800/90 rounded-2xl p-5 border border-slate-700/80 transition-all"> -->
+  <!--         <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4"> -->
+  <!--           <div class="flex items-center space-x-3"> -->
+  <!--             <span class="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-lg"><i class="fa-solid fa-clock"></i></span> -->
+  <!--             <div> -->
+  <!--               <p class="text-xs text-slate-400">Est. Walking Time</p> -->
+  <!--               <p id="routeTime" class="text-xl font-extrabold text-white">4 Mins</p> -->
+  <!--             </div> -->
+  <!--           </div> -->
+  <!--           <div class="flex items-center space-x-3"> -->
+  <!--             <span class="p-2 bg-blue-500/20 text-blue-400 rounded-lg text-lg"><i class="fa-solid fa-ruler"></i></span> -->
+  <!--             <div> -->
+  <!--               <p class="text-xs text-slate-400">Approx. Distance</p> -->
+  <!--               <p id="routeDistance" class="text-xl font-extrabold text-white">280 meters</p> -->
+  <!--             </div> -->
+  <!--           </div> -->
+  <!--         </div> -->
+  <!---->
+  <!--         <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Walking Directions:</h4> -->
+  <!--         <ol id="routeSteps" class="space-y-2 text-xs sm:text-sm text-slate-300 list-decimal list-inside pl-1"> -->
+  <!--           <!-- Dynamic steps -->
+  <!--         </ol> -->
+  <!--       </div> -->
+  <!---->
+  <!--     </div> -->
+  <!--   </div> -->
+  <!-- </section> -->
 
   <!-- ================= FACILITIES & AMENITIES INDEX ================= -->
   <section id="facilities-index" class="py-12 bg-white border-t border-slate-200 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
-        <span class="text-xs font-bold text-utar-red uppercase tracking-widest">Campus Services</span>
         <h2 class="text-2xl sm:text-3xl font-extrabold text-utar-navy mt-1">Key Facilities & Services Index</h2>
         <p class="text-slate-600 text-sm mt-1">Quick lookup for ATMs, Cafeterias, Libraries, Gyms, and Bus Stands across campus.</p>
       </div>
@@ -526,7 +438,6 @@
       
       <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
         <div>
-          <span class="text-xs font-bold text-utar-red uppercase tracking-widest">Public & Campus Mobility</span>
           <h2 class="text-2xl sm:text-3xl font-extrabold text-utar-navy mt-1">Shuttle Bus Routes & Timetable</h2>
           <p class="text-slate-600 text-sm mt-1">Daily shuttle bus operating hours, pickup points, and schedule downloads.</p>
         </div>
@@ -631,10 +542,10 @@
 
       <!-- Modal Footer -->
       <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-3">
-        <button onclick="setPathfinderDestinationFromModal()" class="px-4 py-2 bg-utar-navy hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5">
-          <i class="fa-solid fa-route text-utar-gold"></i>
-          <span>Set as Pathfinder Destination</span>
-        </button>
+        <!-- <button onclick="setPathfinderDestinationFromModal()" class="px-4 py-2 bg-utar-navy hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5"> -->
+        <!--   <i class="fa-solid fa-route text-utar-gold"></i> -->
+        <!--   <span>Set as Pathfinder Destination</span> -->
+        <!-- </button> -->
         <button onclick="closeModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-all">
           Close
         </button>
@@ -649,6 +560,7 @@
     <span id="toastMsg">Action completed successfully.</span>
   </div>
 
+    <!-- FIXME: Check & Fix info in this footer (phone numbers, address, etc) -->
   <!-- ================= FOOTER ================= -->
   <footer class="mt-auto bg-utar-navy text-white border-t-4 border-utar-gold pt-12 pb-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 text-xs sm:text-sm">
@@ -663,7 +575,7 @@
           <span class="font-extrabold text-lg text-white">UTAR NAV</span>
         </div>
         <p class="text-slate-400 text-xs leading-relaxed">
-          Interactive campus block locator and navigation system for Universiti Tunku Abdul Rahman (Kampar & Sungai Long).
+          Interactive campus block locator and navigation system for Universiti Tunku Abdul Rahman (Kampar).
         </p>
       </div>
 
@@ -673,14 +585,6 @@
           Jalan Universiti, Bandar Barat,<br>31900 Kampar, Perak, Malaysia.
         </p>
         <p class="text-slate-400 text-xs"><i class="fa-solid fa-phone mr-1"></i> +605-468 8888</p>
-      </div>
-
-      <div>
-        <h4 class="font-bold text-utar-gold uppercase tracking-wider text-xs mb-3">Sungai Long Campus</h4>
-        <p class="text-slate-300 text-xs leading-relaxed mb-2">
-          Jalan Sungai Long, Bandar Sungai Long,<br>43000 Kajang, Selangor, Malaysia.
-        </p>
-        <p class="text-slate-400 text-xs"><i class="fa-solid fa-phone mr-1"></i> +603-9086 0288</p>
       </div>
 
       <div>
@@ -695,6 +599,7 @@
     </div>
 
     <div class="max-w-7xl mx-auto pt-6 border-t border-slate-800 text-center text-slate-400 text-xs">
+        <!-- FIXME: Change, cannot attribute this to UTAR -->
       <p>© 2026 Universiti Tunku Abdul Rahman (UTAR). All rights reserved. Designed for student & visitor navigation.</p>
     </div>
   </footer>
@@ -702,18 +607,10 @@
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <script>
     // --- CAMPUS DATA STRUCTURE INCLUDING EXACT BLOCK DESIGNATIONS ---
+    // FIXME: Change text in this section
     const campusData = {
       kampar: {
         name: "UTAR Kampar Campus",
-        mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.6295328827725!2d101.1378393!3d4.3385757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31cae3f16d5ba4db%3A0x8673a5538e1b439c!2sUniversiti%20Tunku%20Abdul%20Rahman%20(UTAR)%20Kampar%20Campus!5e0!3m2!1sen!2smy!4v1710000000000",
-        chips: [
-          { label: 'Block A: Heritage Hall', id: 'block-a' },
-          { label: 'Block C: Pavilion I', id: 'block-c' },
-          { label: 'Block D: FSc', id: 'block-d' },
-          { label: 'Block G: Library', id: 'block-g' },
-          { label: 'Block M: Grand Hall', id: 'block-m' },
-          { label: 'Block N: FICT', id: 'block-n' }
-        ],
         pois: [
           {
             id: 'block-a',
@@ -727,7 +624,7 @@
             facilities: ['Ceremonial Stage', 'VIP Holding Room', 'Exhibition Foyer'],
             icon: 'fa-landmark',
             color: 'text-amber-600 bg-amber-50',
-            x: 150, y: 380
+            lat: 4.335168, lon: 101.141175
           },
           {
             id: 'block-b',
@@ -741,7 +638,7 @@
             facilities: ['Tutorial Rooms', 'Audio-Visual Halls', 'Student Rest Areas'],
             icon: 'fa-chalkboard-user',
             color: 'text-indigo-600 bg-indigo-50',
-            x: 280, y: 380
+            lat: 4.336259, lon: 101.141186
           },
           {
             id: 'block-c',
@@ -755,7 +652,7 @@
             facilities: ['Main Cafeteria', 'Public Bank ATM', 'Photocopy Shop', 'Stationery Store'],
             icon: 'fa-utensils',
             color: 'text-orange-600 bg-orange-50',
-            x: 390, y: 380
+            lat: 4.337232, lon: 101.142353
           },
           {
             id: 'block-d',
@@ -769,7 +666,7 @@
             facilities: ['Chemistry Labs', 'Bio-Tech Research Center', 'Microbiology Suite'],
             icon: 'fa-flask',
             color: 'text-emerald-600 bg-emerald-50',
-            x: 520, y: 380
+            lat: 4.337946, lon: 101.143746
           },
           {
             id: 'block-e',
@@ -783,7 +680,7 @@
             facilities: ['Petrochemical Labs', 'Green Tech Workshops', 'Environmental Testing Room'],
             icon: 'fa-gear',
             color: 'text-teal-600 bg-teal-50',
-            x: 650, y: 380
+            lat: 4.338634, lon: 101.143545
           },
           {
             id: 'block-f',
@@ -797,7 +694,7 @@
             facilities: ['Admissions Counter', 'Division of Examinations', 'Student Affairs Department', 'Maybank ATM'],
             icon: 'fa-building-user',
             color: 'text-purple-600 bg-purple-50',
-            x: 200, y: 240
+            lat: 4.339633, lon: 101.143583
           },
           {
             id: 'block-g',
@@ -811,7 +708,7 @@
             facilities: ['Discussion Rooms', 'Printing Station', 'e-Database Terminals', 'Silent Reading Floors'],
             icon: 'fa-book-bookmark',
             color: 'text-blue-600 bg-blue-50',
-            x: 350, y: 240
+            lat: 4.339722, lon: 101.143033
           },
           {
             id: 'block-h',
@@ -825,7 +722,7 @@
             facilities: ['Bloomberg Terminals', 'Lecture Theaters', 'Student Seminar Rooms'],
             icon: 'fa-chart-line',
             color: 'text-cyan-600 bg-cyan-50',
-            x: 500, y: 240
+            lat: 4.34095, lon: 101.143005
           },
           {
             id: 'block-i',
@@ -839,7 +736,7 @@
             facilities: ['Tiered Lecture Theaters', 'Audio System', 'Projector Suites'],
             icon: 'fa-users-rectangle',
             color: 'text-indigo-600 bg-indigo-50',
-            x: 650, y: 240
+            lat: 4.340783, lon: 101.142621
           },
           {
             id: 'block-j',
@@ -853,7 +750,7 @@
             facilities: ['CNC Machining Unit', 'Structural Concrete Lab', 'Electrical Circuits Lab'],
             icon: 'fa-wrench',
             color: 'text-slate-700 bg-slate-100',
-            x: 770, y: 240
+            lat: 4.341216, lon: 101.144322
           },
           {
             id: 'block-k',
@@ -867,7 +764,7 @@
             facilities: ['Lakeside Cafeteria', 'Air-Conditioned Dining', 'Student Activity Hub'],
             icon: 'fa-burger',
             color: 'text-orange-600 bg-orange-50',
-            x: 350, y: 100
+            lat: 4.342004, lon: 101.141252
           },
           {
             id: 'block-l',
@@ -881,7 +778,7 @@
             facilities: ['Smart Classrooms', 'Hybrid Lecture Setup'],
             icon: 'fa-display',
             color: 'text-indigo-600 bg-indigo-50',
-            x: 480, y: 100
+            lat: 4.34177, lon: 101.140088
           },
           {
             id: 'block-m',
@@ -895,7 +792,7 @@
             facilities: ['3,000 Seat Hall', 'Indoor Sports Courts', 'Exhibition Space'],
             icon: 'fa-building-columns',
             color: 'text-amber-700 bg-amber-100',
-            x: 180, y: 100
+            lat: 4.340293, lon: 101.137683
           },
           {
             id: 'block-n',
@@ -909,7 +806,7 @@
             facilities: ['AI & Robotics Labs', 'CISCO Networking Hub', 'IPSR Research Suites'],
             icon: 'fa-laptop-code',
             color: 'text-blue-600 bg-blue-50',
-            x: 620, y: 100
+            lat: 4.338739, lon: 101.136708
           },
           {
             id: 'block-p',
@@ -923,7 +820,7 @@
             facilities: ['Psychology Observation Labs', 'Broadcasting Studio', 'Chinese Cultural Gallery'],
             icon: 'fa-masks-theater',
             color: 'text-rose-600 bg-rose-50',
-            x: 760, y: 100
+            lat: 4.338485, lon: 101.13719
           }
         ],
         busSchedule: [
@@ -931,79 +828,6 @@
           { route: 'R2', name: 'Kampar Town / KTM Station Line', first: '07:30 AM', last: '08:00 PM', stop: 'KTM Kampar Station', status: 'Active' },
           { route: 'R3', name: 'Eastlake / Bandar Baru Shuttle', first: '07:45 AM', last: '07:00 PM', stop: 'Eastlake Commercial Hub', status: 'Active' },
           { route: 'R4', name: 'Internal Campus Loop (Block A to P)', first: '08:00 AM', last: '06:00 PM', stop: 'Block A -> Block G -> Block N', status: 'Active' }
-        ]
-      },
-      sglong: {
-        name: "UTAR Sungai Long Campus",
-        mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3984.103099905295!2d101.7923763!3d3.0401827!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31cc34cf1f3912a5%3A0x8673a5538e1b439c!2sUniversiti%20Tunku%20Abdul%20Rahman%20(UTAR)%20Sungai%20Long%20Campus!5e0!3m2!1sen!2smy!4v1710000000000",
-        chips: [
-          { label: 'Block KB (Main Complex)', id: 'block-kb' },
-          { label: 'Block KA', id: 'block-ka' },
-          { label: 'Mary KUOK Library', id: 'library-sglong' },
-          { label: 'KB Cafeteria', id: 'kb-cafeteria' }
-        ],
-        pois: [
-          {
-            id: 'block-kb',
-            code: 'Block KB',
-            name: 'Block KB: Main Academic Tower',
-            category: 'faculty',
-            catLabel: 'Main Academic Complex',
-            desc: '10-story main academic complex housing Lee Kong Chian Faculty of Engineering & Science (LKC FES), administrative offices, and main hall.',
-            hours: '7:30 AM - 9:30 PM',
-            busStop: 'Main KB Entrance',
-            facilities: ['Multi-purpose Hall', 'Engineering Labs', 'Concourse Area', 'Lifts & Escalators'],
-            icon: 'fa-building',
-            color: 'text-blue-600 bg-blue-50',
-            x: 450, y: 220
-          },
-          {
-            id: 'block-ka',
-            code: 'Block KA',
-            name: 'Block KA: Academic & Admin Block',
-            category: 'faculty',
-            catLabel: 'Academic Block',
-            desc: 'Houses Faculty of Accountancy & Management (FAM), Faculty of Creative Industries (FCI), and Department of Student Affairs.',
-            hours: '8:00 AM - 7:00 PM',
-            busStop: 'KA Side Gate',
-            facilities: ['FAM Lecture Rooms', 'Mac Computer Suites', 'Counseling Center'],
-            icon: 'fa-graduation-cap',
-            color: 'text-indigo-600 bg-indigo-50',
-            x: 250, y: 220
-          },
-          {
-            id: 'library-sglong',
-            code: 'KB L3',
-            name: 'Mary KUOK Pick Hoo Library',
-            category: 'admin',
-            catLabel: 'Library',
-            desc: 'Modern city campus library with digital databases, group discussion rooms, and quiet zones located inside Block KB Level 3.',
-            hours: '8:00 AM - 9:00 PM',
-            busStop: 'Main KB Entrance',
-            facilities: ['Silent Study Zones', 'Discussion Rooms', 'e-Journals'],
-            icon: 'fa-book-open',
-            color: 'text-emerald-600 bg-emerald-50',
-            x: 450, y: 150
-          },
-          {
-            id: 'kb-cafeteria',
-            code: 'KB Lower',
-            name: 'KB Underground Cafeteria',
-            category: 'pavilion',
-            catLabel: 'Dining',
-            desc: 'Spacious food court serving varied Western, Asian, vegetarian, and snack options for students.',
-            hours: '7:00 AM - 6:30 PM',
-            busStop: 'Main KB Entrance',
-            facilities: ['Air-Conditioned Dining', 'Beverage Stall', 'Bakery Corner'],
-            icon: 'fa-utensils',
-            color: 'text-orange-600 bg-orange-50',
-            x: 450, y: 320
-          }
-        ],
-        busSchedule: [
-          { route: 'T415', name: 'MRT Bukit Dukung <-> UTAR Sungai Long', first: '06:00 AM', last: '11:30 PM', stop: 'MRT Station Door A', status: 'Active' },
-          { route: 'SL1', name: 'Bandar Mahkota Cheras Shuttle', first: '07:00 AM', last: '08:00 PM', stop: 'BMC Commercial Center', status: 'Active' },
-          { route: 'SL2', name: 'Residences Loop (Silk / Forest Green)', first: '07:15 AM', last: '07:30 PM', stop: 'Forest Green Condo Gate', status: 'Active' }
         ]
       }
     };
@@ -1020,159 +844,114 @@
       renderCampusView();
     };
 
-    function setCampus(campusKey) {
-      activeCampus = campusKey;
-      activeCategory = 'all';
-      pathHighlight = null;
-      
-      const navKamparBtn = document.getElementById('navKamparBtn');
-      const navSgLongBtn = document.getElementById('navSgLongBtn');
-      const mapTabKampar = document.getElementById('mapTabKampar');
-      const mapTabSgLong = document.getElementById('mapTabSgLong');
-
-      if (campusKey === 'kampar') {
-        navKamparBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 bg-utar-red text-white shadow-md";
-        navSgLongBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 text-slate-300 hover:text-white";
-        mapTabKampar.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-utar-navy text-white shadow-sm";
-        mapTabSgLong.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 text-slate-600 hover:text-slate-900";
-      } else {
-        navSgLongBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 bg-utar-red text-white shadow-md";
-        navKamparBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 text-slate-300 hover:text-white";
-        mapTabSgLong.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-utar-navy text-white shadow-sm";
-        mapTabKampar.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 text-slate-600 hover:text-slate-900";
-      }
-
-      renderCampusView();
-      showToast(`Switched view to ${campusData[campusKey].name}`);
-    }
-
-    function setMapMode(mode) {
-      currentMapMode = mode;
-      const svgBox = document.getElementById('svgMapContainer');
-      const gmapIframe = document.getElementById('campusMapIframe');
-      const svgBtn = document.getElementById('mapModeSvgBtn');
-      const gmapBtn = document.getElementById('mapModeGmapBtn');
-
-      if (mode === 'svg') {
-        svgBox.classList.remove('hidden');
-        gmapIframe.classList.add('hidden');
-        svgBtn.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-white text-utar-navy shadow-sm";
-        gmapBtn.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 text-slate-600 hover:text-slate-900";
-      } else {
-        svgBox.classList.add('hidden');
-        gmapIframe.classList.remove('hidden');
-        gmapBtn.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-white text-utar-navy shadow-sm";
-        svgBtn.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 text-slate-600 hover:text-slate-900";
-      }
-    }
-
     function renderCampusView() {
       const data = campusData[activeCampus];
 
       // Update Hero Text
       document.getElementById('heroCampusTitle').textContent = data.name;
 
-      // Render Hero Quick Chips
-      const chipsContainer = document.getElementById('quickChipsContainer');
-      chipsContainer.innerHTML = '';
-      data.chips.forEach(chip => {
-        const btn = document.createElement('button');
-        btn.className = "bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3 py-1 rounded-full font-medium transition-all";
-        btn.textContent = chip.label;
-        btn.onclick = () => openModalById(chip.id);
-        chipsContainer.appendChild(btn);
-      });
-
-      // Update Embedded Map URL
-      document.getElementById('campusMapIframe').src = data.mapUrl;
-      document.getElementById('mapOverlayLabel').textContent = `${data.name} Interactive View`;
-
-      // Render Visual SVG Interactive Map
-      renderSvgMap();
+      setupLeaflet();
 
       // Render Map Sidebar List & POI Grid
       renderSidebarMapList();
-      renderPoiGrid();
+      // renderPoiGrid();
 
       // Populate Pathfinder Dropdowns
-      populatePathfinderOptions();
+      // populatePathfinderOptions();
 
       // Render Bus Schedule Table
       renderBusSchedule();
     }
 
-    // --- INTERACTIVE VISUAL SVG MAP BUILDER ---
-    function renderSvgMap() {
-      const svg = document.getElementById('visualCampusSvg');
-      svg.innerHTML = '';
+    function setupLeaflet() {
+      const map = window.map = L.map('leafletMap', {
+        center: [4.338, 101.14],
+        zoomSnap: 0,
+        zoom: 16,
+      });
 
-      const data = campusData[activeCampus];
-      const pois = data.pois;
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
 
-      // Draw Campus Ground / Lake Background Aesthetics
-      if (activeCampus === 'kampar') {
-        svg.innerHTML += `
-          <!-- Decorative Campus Lake -->
-          <path d="M 120 480 Q 300 440 450 490 T 800 460 L 900 550 L 0 550 Z" fill="#0284c7" opacity="0.2"/>
-          <text x="450" y="525" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">UTAR KAMPAR LAKESIDE</text>
+      markers();
+    }
 
-          <!-- Pedestrian Walkways / Road Network -->
-          <line x1="100" y1="380" x2="800" y2="380" stroke="#334155" stroke-width="12" stroke-linecap="round"/>
-          <line x1="100" y1="240" x2="800" y2="240" stroke="#334155" stroke-width="12" stroke-linecap="round"/>
-          <line x1="100" y1="100" x2="800" y2="100" stroke="#334155" stroke-width="12" stroke-linecap="round"/>
-          
-          <!-- Vertical Connecting Avenues -->
-          <line x1="180" y1="100" x2="180" y2="380" stroke="#334155" stroke-width="10"/>
-          <line x1="350" y1="100" x2="350" y2="380" stroke="#334155" stroke-width="10"/>
-          <line x1="500" y1="100" x2="500" y2="380" stroke="#334155" stroke-width="10"/>
-          <line x1="650" y1="100" x2="650" y2="380" stroke="#334155" stroke-width="10"/>
-        `;
-      } else {
-        svg.innerHTML += `
-          <!-- Sungai Long City Block Layout -->
-          <rect x="150" y="80" width="600" height="380" rx="20" fill="#1e293b" stroke="#334155" stroke-width="4"/>
-          <line x1="350" y1="80" x2="350" y2="460" stroke="#475569" stroke-width="14"/>
-        `;
-      }
-
-      // Draw Path Line if Pathfinder route active
-      if (pathHighlight) {
-        const startPoi = pois.find(p => p.id === pathHighlight.startId);
-        const endPoi = pois.find(p => p.id === pathHighlight.endId);
-        if (startPoi && endPoi) {
-          svg.innerHTML += `
-            <line x1="startPoi.x"y1="{startPoi.y}" x2="endPoi.x"y2="{endPoi.y}" 
-                  stroke="#F2A900" stroke-width="6" stroke-dasharray="8 6" stroke-linecap="round">
-              <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite" />
-            </line>
-          `;
+    function clearMarkers() {
+      if (window.leafletMarkers) {
+        for (const marker of window.leafletMarkers) {
+          marker.remove();
         }
       }
+    }
 
-      // Draw Block Nodes
-      pois.forEach(poi => {
-        const filtered = activeCategory === 'all' || poi.category === activeCategory;
-        const isPathNode = pathHighlight && (pathHighlight.startId === poi.id || pathHighlight.endId === poi.id);
-        
-        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        group.setAttribute("class", `map-block-node ${isPathNode ? 'map-block-active' : ''}`);
-        group.setAttribute("onclick", `openModalById('${poi.id}')`);
-        group.setAttribute("opacity", filtered ? "1" : "0.25");
+    function markers() {
+      clearMarkers();
 
-        const rectWidth = 90;
-        const rectHeight = 44;
-        const xPos = poi.x - rectWidth / 2;
-        const yPos = poi.y - rectHeight / 2;
+      const map = window.map;
+      window.leafletMarkers = [];
 
-        group.innerHTML = `
-          <rect x="xPos"y="{yPos}" width="rectWidth"height="{rectHeight}" rx="10" 
-                fill="isPathNode?'#D9232A':'#002B49'"stroke="{isPathNode ? '#F2A900' : '#38bdf8'}" stroke-width="2"/>
-          <text x="poi.x"y="{poi.y - 4}" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">${poi.code}</text>
-          <text x="poi.x"y="{poi.y + 12}" fill="#f2a900" font-size="8" font-weight="medium" text-anchor="middle">${poi.catLabel.substring(0, 14)}</text>
-        `;
-
-        svg.appendChild(group);
+      const pois = campusData[activeCampus].pois.filter(item => {
+        return activeCategory === 'all' || item.category === activeCategory;
       });
+      for (const poi of pois) {
+        const marker = L.marker([poi.lat, poi.lon], { title: poi.name }).addTo(map).bindPopup(poi.name).on('click', markerClick);
+        window.leafletMarkers.push(marker);
+      }
+    }
+
+    function markerClick(event) {
+      const { lat, lng: lon } = event.latlng;
+      const poi = campusData[activeCampus].pois.find((p) => (
+        p.lat == lat && p.lon == lon
+      ));
+
+      if (window.startPoi) {
+        if (window.startPoi.id === poi.id) {
+          window.startPoi = undefined;
+        } else {
+          window.endPoi = poi;
+          route();
+        }
+      } else {
+        window.startPoi = poi;
+      }
+    }
+
+    function clearRoute() {
+      window.startPoi = undefined;
+      window.endPoi = undefined;
+      window.lrmControl.remove();
+      window.map.setView(L.latLng(4.338, 101.14), 16);
+      markers();
+    }
+
+    function route() {
+      const map = window.map;
+
+      clearMarkers();
+
+      window.lrmControl = L.Routing.control({
+        plan: L.Routing.plan(
+          [
+            L.latLng(window.startPoi.lat, window.startPoi.lon),
+            L.latLng(window.endPoi.lat, window.endPoi.lon)
+          ],
+          {
+            draggableWaypoints: false,
+          }
+        ),
+        router: L.Routing.osrmv1({
+          profile: 'foot',
+          serviceUrl: 'https://routing.openstreetmap.de/routed-foot/route/v1'
+        }),
+        routeWhileDragging: true
+      }).addTo(map);
+
+      L.easyButton('fa-xmark', function(btn) {
+        btn.remove();
+        clearRoute();
+      }).addTo(map);
     }
 
     // --- SIDEBAR & GRID RENDERERS ---
@@ -1213,55 +992,55 @@
       });
     }
 
-    function renderPoiGrid() {
-      const gridContainer = document.getElementById('poiGrid');
-      gridContainer.innerHTML = '';
-
-      const pois = campusData[activeCampus].pois.filter(item => {
-        return activeCategory === 'all' || item.category === activeCategory;
-      });
-
-      if (pois.length === 0) {
-        gridContainer.innerHTML = `
-          <div class="col-span-full py-12 text-center text-slate-500">
-            <i class="fa-solid fa-compass text-3xl mb-2 text-slate-300"></i>
-            <p class="text-sm font-medium">No blocks found matching your search.</p>
-          </div>
-        `;
-        return;
-      }
-
-      pois.forEach(poi => {
-        const card = document.createElement('div');
-        card.className = "poi-card bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md hover:border-utar-navy/30 transition-all flex flex-col justify-between cursor-pointer";
-        card.onclick = () => openModal(poi);
-
-        card.innerHTML = `
-          <div>
-            <div class="flex items-start justify-between mb-3">
-              <span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full ${poi.color}">
-                ${poi.catLabel}
-              </span>
-              <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${poi.code}</span>
-            </div>
-            <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-1.5 group-hover:text-utar-blueLight transition-colors">${poi.name}</h3>
-            <p class="text-slate-600 text-xs line-clamp-2 leading-relaxed mb-4">${poi.desc}</p>
-          </div>
-
-          <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span class="flex items-center space-x-1">
-              <i class="fa-solid fa-bus text-slate-400"></i>
-              <span class="text-[11px]">${poi.busStop}</span>
-            </span>
-            <span class="text-utar-blueLight font-bold text-[11px] flex items-center space-x-1">
-              <span>View Block</span>
-              <i class="fa-solid fa-arrow-right text-[9px]"></i>
-            </span>
-          </div>
-        `;
-        gridContainer.appendChild(card);
-      });
-    }
+    // function renderPoiGrid() {
+    //   const gridContainer = document.getElementById('poiGrid');
+    //   gridContainer.innerHTML = '';
+    //
+    //   const pois = campusData[activeCampus].pois.filter(item => {
+    //     return activeCategory === 'all' || item.category === activeCategory;
+    //   });
+    //
+    //   if (pois.length === 0) {
+    //     gridContainer.innerHTML = `
+    //       <div class="col-span-full py-12 text-center text-slate-500">
+    //         <i class="fa-solid fa-compass text-3xl mb-2 text-slate-300"></i>
+    //         <p class="text-sm font-medium">No blocks found matching your search.</p>
+    //       </div>
+    //     `;
+    //     return;
+    //   }
+    //
+    //   pois.forEach(poi => {
+    //     const card = document.createElement('div');
+    //     card.className = "poi-card bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md hover:border-utar-navy/30 transition-all flex flex-col justify-between cursor-pointer";
+    //     card.onclick = () => openModal(poi);
+    //
+    //     card.innerHTML = `
+    //       <div>
+    //         <div class="flex items-start justify-between mb-3">
+    //           <span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full ${poi.color}">
+    //             ${poi.catLabel}
+    //           </span>
+    //           <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${poi.code}</span>
+    //         </div>
+    //         <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-1.5 group-hover:text-utar-blueLight transition-colors">${poi.name}</h3>
+    //         <p class="text-slate-600 text-xs line-clamp-2 leading-relaxed mb-4">${poi.desc}</p>
+    //       </div>
+    //
+    //       <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+    //         <span class="flex items-center space-x-1">
+    //           <i class="fa-solid fa-bus text-slate-400"></i>
+    //           <span class="text-[11px]">${poi.busStop}</span>
+    //         </span>
+    //         <span class="text-utar-blueLight font-bold text-[11px] flex items-center space-x-1">
+    //           <span>View Block</span>
+    //           <i class="fa-solid fa-arrow-right text-[9px]"></i>
+    //         </span>
+    //       </div>
+    //     `;
+    //     gridContainer.appendChild(card);
+    //   });
+    // }
 
     // --- CATEGORY FILTERING & SEARCH ---
     function filterCategory(catKey) {
@@ -1274,9 +1053,9 @@
 
       event.currentTarget.className = "cat-btn active px-4 py-2 rounded-xl font-semibold bg-utar-navy text-white whitespace-nowrap shadow";
 
-      renderSvgMap();
+      markers();
       renderSidebarMapList();
-      renderPoiGrid();
+      // renderPoiGrid();
     }
 
     function filterPoiCards() {
@@ -1315,31 +1094,31 @@
     }
 
     // --- CAMPUS PATHFINDER CALCULATOR ---
-    function populatePathfinderOptions() {
-      const startSelect = document.getElementById('routeStart');
-      const endSelect = document.getElementById('routeEnd');
-      const pois = campusData[activeCampus].pois;
-
-      startSelect.innerHTML = '';
-      endSelect.innerHTML = '';
-
-      pois.forEach((poi, idx) => {
-        const opt1 = document.createElement('option');
-        opt1.value = poi.id;
-        opt1.textContent = poi.name;
-        startSelect.appendChild(opt1);
-
-        const opt2 = document.createElement('option');
-        opt2.value = poi.id;
-        opt2.textContent = poi.name;
-        endSelect.appendChild(opt2);
-      });
-
-      if (pois.length > 2) {
-        startSelect.selectedIndex = pois.findIndex(p => p.id === 'block-n') !== -1 ? pois.findIndex(p => p.id === 'block-n') : 0;
-        endSelect.selectedIndex = pois.findIndex(p => p.id === 'block-c') !== -1 ? pois.findIndex(p => p.id === 'block-c') : 1;
-      }
-    }
+    // function populatePathfinderOptions() {
+    //   const startSelect = document.getElementById('routeStart');
+    //   const endSelect = document.getElementById('routeEnd');
+    //   const pois = campusData[activeCampus].pois;
+    //
+    //   startSelect.innerHTML = '';
+    //   endSelect.innerHTML = '';
+    //
+    //   pois.forEach((poi, idx) => {
+    //     const opt1 = document.createElement('option');
+    //     opt1.value = poi.id;
+    //     opt1.textContent = poi.name;
+    //     startSelect.appendChild(opt1);
+    //
+    //     const opt2 = document.createElement('option');
+    //     opt2.value = poi.id;
+    //     opt2.textContent = poi.name;
+    //     endSelect.appendChild(opt2);
+    //   });
+    //
+    //   if (pois.length > 2) {
+    //     startSelect.selectedIndex = pois.findIndex(p => p.id === 'block-n') !== -1 ? pois.findIndex(p => p.id === 'block-n') : 0;
+    //     endSelect.selectedIndex = pois.findIndex(p => p.id === 'block-c') !== -1 ? pois.findIndex(p => p.id === 'block-c') : 1;
+    //   }
+    // }
 
     function calculateRoute() {
       const startId = document.getElementById('routeStart').value;
@@ -1376,7 +1155,6 @@
 
       // Set Map Highlight Path Line
       pathHighlight = { startId, endId };
-      renderSvgMap();
 
       showToast(`Calculated route from ${startPoi.code} to ${endPoi.code}`);
     }
